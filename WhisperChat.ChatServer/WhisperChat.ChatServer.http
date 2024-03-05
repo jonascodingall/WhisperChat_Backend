@@ -1,0 +1,6 @@
+@WhisperChat.ChatServer_HostAddress = http://localhost:5272
+
+GET {{WhisperChat.ChatServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
