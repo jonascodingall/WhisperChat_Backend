@@ -5,16 +5,30 @@ namespace WhisperChat.ChatServer.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task JoinChat(UserConnection conn)
+        public async Task SendMessage(MessageModel message)
         {
-            await Clients.All.SendAsync("RecieveMessage", "admin", $"{conn.Username} has joined");
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
-        public async Task JoinSpecificChatRoom(UserConnection conn)
+        public async Task GetMessages()
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, conn.ChatRoom);
+            var messages = new List<MessageModel>
+            {
+                new MessageModel { Message= "Test1", Direction = MessageDirection.Incoming, Sender = "Joline", SentTime = "69", Position = Position.Single},
+                new MessageModel { Message= "Test2", Direction = MessageDirection.Incoming, Sender = "Joline", SentTime = "69", Position = Position.Single},
+            };
+            await Clients.Caller.SendAsync("GetMessages", messages);
+        }
 
-            await Clients.Group(conn.ChatRoom).SendAsync("JoinSpecificChatRoom", "admin", $"{conn.Username} has joined {conn.ChatRoom}");
+        public async Task GetUsers()
+        {
+            var users = new List<UserModel>
+            {
+                new UserModel { Id = 1, Name = "Alice" },
+                new UserModel { Id = 2, Name = "Bob" },
+            };
+
+            await Clients.Caller.SendAsync("ReceiveUsers", users);
         }
     }
 }
