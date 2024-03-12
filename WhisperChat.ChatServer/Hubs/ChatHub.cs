@@ -1,23 +1,31 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using WhisperChat.ChatServer.Models;
+using WhisperChat.ChatServer.Services;
 
 namespace WhisperChat.ChatServer.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(MessageModel message)
+        IMessageService _messageService;
+        public ChatHub(IMessageService messageService)
         {
-            await Clients.All.SendAsync("ReceiveMessage", message);
+            _messageService = messageService;
         }
 
-        public async Task GetMessages()
+        public async Task SendMessage(string message)
         {
-            var messages = new List<MessageModel>
-            {
-                new MessageModel { Message= "Test1", Direction = MessageDirection.Incoming, Sender = "Joline", SentTime = "69", Position = Position.Single},
-                new MessageModel { Message= "Test2", Direction = MessageDirection.Incoming, Sender = "Joline", SentTime = "69", Position = Position.Single},
-            };
-            await Clients.Caller.SendAsync("GetMessages", messages);
+            var messageModel = JsonSerializer.Deserialize<MessageModel>(message) ?? throw new Exception("Message could not be parsed");
+            await _messageService.CreateMessage(messageModel);
+            await Clients.All.SendAsync("ReceiveMessage", messageModel);
+        }
+
+        public List<MessageModel> GetMessages(string senderId, string recipientId)
+        {
+            var messages =  _messageService.ReadMessagesByRecipientAsync(senderId, recipientId);
+            return messages.ToList();
         }
 
         public async Task GetUsers()

@@ -1,4 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using WhisperChat.ChatServer.Data;
+using WhisperChat.ChatServer.Data.Repos;
 using WhisperChat.ChatServer.Hubs;
+using WhisperChat.ChatServer.Models;
+using WhisperChat.ChatServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +27,12 @@ builder.Services.AddCors(options =>
         
     });
 });
+
+builder.Services.AddDbContext<ChatContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddTransient<IRepository<MessageModel>, Repository<ChatContext, MessageModel>>();
+builder.Services.AddTransient<IMessageService, MessageService>();
 
 var app = builder.Build();
 
