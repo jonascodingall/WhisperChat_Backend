@@ -19,7 +19,7 @@ namespace WhisperChat.ChatServer.Hubs
         {
             var messageModel = JsonSerializer.Deserialize<MessageModel>(message) ?? throw new Exception("Message could not be parsed");
             await _messageService.CreateMessage(messageModel);
-            await Clients.All.SendAsync("ReceiveMessage", messageModel);
+            await Clients.Others.SendAsync("ReceiveMessage", messageModel);
         }
 
         public List<MessageModel> GetMessages(string senderId, string recipientId)
